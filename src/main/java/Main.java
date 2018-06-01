@@ -13,56 +13,58 @@ import static spark.Spark.post;
 public class Main {
 
     public static void main(String[] args) {
+        //Cargando la configuracion de freemarker
         Configuration configuration = new Configuration(Configuration.VERSION_2_3_28);
         configuration.setClassForTemplateLoading(Main.class, "/");
 
         ArrayList<Estudiante> estudiantes = new ArrayList<>();
-
+        //Seteando el path principal
         get("/", (req, res) -> {
             StringWriter writer = new StringWriter();
-            Map<String, Object> atributos = new HashMap<>();
+            Map<String, Object> atr = new HashMap<>();
             Template template = configuration.getTemplate("templates/home.ftl");
 
-            atributos.put("estudiantes", estudiantes);
-            template.process(atributos, writer);
+            atr.put("estudiantes", estudiantes);
+            template.process(atr, writer);
 
             return writer;
         });
-
+        //Llamada post para agregar un estudiante nuevo
         post("/agregar", (req, res) -> {
-            int matricula = Integer.parseInt(req.queryParams("matricula"));
-            String nombre = req.queryParams("nombre");
-            String apellido = req.queryParams("apellido");
-            String telefono = req.queryParams("telefono");
+            int mat = Integer.parseInt(req.queryParams("matricula"));
+            String nom = req.queryParams("nombre");
+            String ape = req.queryParams("apellido");
+            String tel = req.queryParams("telefono");
 
-            estudiantes.add(new Estudiante(matricula, nombre, apellido, telefono));
+            estudiantes.add(new Estudiante(mat, nom, ape, tel));
 
             res.redirect("/");
 
             return null;
         });
-
+        //Rutas referente a la clase estudiante
         path("/est", () -> {
+            //Ruta para agregar un estudiante
             get("/agregar", (req, res) -> {
                 StringWriter writer = new StringWriter();
-                Template template = configuration.getTemplate("templates/agregar.ftl");
+                Template temp = configuration.getTemplate("templates/agregar.ftl");
 
-                template.process(null, writer);
+                temp.process(null, writer);
 
                 return writer;
             });
-
+        //Llamada para editar un estudiante
             post("/editar", (req, res) -> {
-                int matricula = Integer.parseInt(req.queryParams("matricula"));
-                String nombre = req.queryParams("nombre");
-                String apellido = req.queryParams("apellido");
-                String telefono = req.queryParams("telefono");
+                int mat = Integer.parseInt(req.queryParams("matricula"));
+                String nom = req.queryParams("nombre");
+                String ape = req.queryParams("apellido");
+                String tel = req.queryParams("telefono");
 
                 for (Estudiante est : estudiantes) {
-                    if (est.getMatricula() == matricula) {
-                        est.setNombre(nombre);
-                        est.setApellido(apellido);
-                        est.setTelefono(telefono);
+                    if (est.getMatricula() == mat) {
+                        est.setNombre(nom);
+                        est.setApellido(ape);
+                        est.setTelefono(tel);
                     }
                 }
 
@@ -70,7 +72,7 @@ public class Main {
 
                 return null;
             });
-
+            //Ruta para editar un estudiante tomando su matricula como parametro
             get("/editar/:matricula", (req, res) -> {
                 try {
                     StringWriter writer = new StringWriter();
@@ -98,7 +100,7 @@ public class Main {
                     return null;
                 }
             });
-
+            //Llamada para borrar un estudiante tomando su matricula como parametro
             post("/borrar/:matricula", (req, res) -> {
                 int matricula = Integer.parseInt(req.params("matricula"));
                 Estudiante estudiante = null;
